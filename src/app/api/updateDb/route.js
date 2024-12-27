@@ -2,8 +2,7 @@ const db = require("../../../../db");
 import { NextResponse } from "next/server";
 
 export async function POST(req) {
-  const { userEmail, userData } = await req.json();
-
+  const { userId, userData } = await req.json();
   const client = await db.getClient();
   try {
     await client.query("BEGIN");
@@ -12,12 +11,11 @@ export async function POST(req) {
         VALUES ($1, $2, CURRENT_TIMESTAMP)
         ON CONFLICT (user_name) 
         DO UPDATE SET 
-        previous_data = user_data_spotify.data,
         data = EXCLUDED.data,
         created_at = EXCLUDED.created_at;
 
     `;
-    await client.query(updateQuery, [userEmail, userData]);
+    await client.query(updateQuery, [userId, userData]);
     await client.query("COMMIT");
     return NextResponse.json(
       { message: "Datos actualizados exitosamente" },

@@ -3,10 +3,10 @@ import { NextResponse } from "next/server";
 
 export async function GET(req) {
   const { searchParams } = new URL(req.url);
-  const email = searchParams.get("email");
+  const userId = searchParams.get("userId");
 
-  if (!email) {
-    return NextResponse.json({ error: "No email provided" }, { status: 400 });
+  if (!userId) {
+    return NextResponse.json({ error: "No userId provided" }, { status: 400 });
   }
 
   const client = await db.getClient();
@@ -14,11 +14,11 @@ export async function GET(req) {
     const query = `
       SELECT data, (NOW() - INTERVAL '7 days' >= created_at) AS actualizar FROM user_data_spotify WHERE user_name = $1;
     `;
-    const result = await client.query(query, [email]);
+    const result = await client.query(query, [userId]);
 
     if (result.rows.length === 0) {
       return NextResponse.json(
-        { error: "No data found for the provided email" },
+        { error: "No data found for the provided userId" },
         { status: 404 }
       );
     }
