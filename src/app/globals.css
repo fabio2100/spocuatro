@@ -40,3 +40,31 @@ a {
     color-scheme: dark;
   }
 }
+
+
+.custom-button {
+  background-color: #0BAD02;
+  color: black;
+  font-weight: 550;
+  border: none;
+  padding: 12px 24px;
+  font-size: 16px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  cursor: pointer;
+
+}
+
+.button-icon {
+  margin-right: 8px;
+}
+
+.button-text {
+  font-size: 16px;
+}
+
+.custom-button:hover {
+  background-color: #067400;
+}
