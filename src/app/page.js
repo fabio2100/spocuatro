@@ -11,6 +11,7 @@ import { CircularProgress } from "@mui/material";
 
 export default function Home() {
   const [mustUpdateDb, setmustUpdateDb] = useState(false);
+  const [reload, setReload] = useState(false);
   const [isNewUser, setIsNewUser] = useState(false);
   const [userInfo, setUserInfo] = useState({
     token: null,
@@ -79,10 +80,9 @@ export default function Home() {
           }
         });
     }
-  }, [userInfo]);
+  }, [userInfo,reload]);
 
   useEffect(() => {
-    console.log({ mustUpdateDb, isNewUser });
     if (mustUpdateDb || isNewUser) {
       fetchUserData(userInfo.token);
     }
@@ -127,10 +127,11 @@ export default function Home() {
       );
 
       const results = await Promise.allSettled(fetchPromises);
-
+console.log(userData)
       results.forEach((result) => {
         if (result.status === "fulfilled") {
           const { id, data } = result.value;
+          console.log({ id});
           const modifiedItems = data.items.map((item) => ({
             ...item,
             change: false,
@@ -162,6 +163,7 @@ export default function Home() {
   }, [userData]);
 
   const updateDB = async (userData) => {
+    if(reload) return
     const filteredUserData = processUserData(userData);
     try {
       await axios.post("/api/updateDb", {
@@ -169,6 +171,7 @@ export default function Home() {
         userData: filteredUserData,
       });
       console.log("Database updated successfully");
+      setReload(true)
     } catch (error) {
       console.error("Error updating the database", error);
     }
