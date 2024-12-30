@@ -68,3 +68,38 @@ a {
 .custom-button:hover {
   background-color: #067400;
 }
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 20px;
+  border-radius: 8px;
+  width: 100%;
+}
+
+.title {
+  flex: 1;
+  text-align: center;
+  margin: 0;
+}
+
+.logout {
+  margin: 0;
+  cursor: pointer;
+  color: #0BAD02;
+  font-weight: bold;
+}
+
+.header .logout:hover {
+  color: #09a201;
+}
+
+
+.custom-select{
+  background-color: #09a201;
+  color: black;
+  border-radius: 6px;
+  height: 50px;
+  min-width: 200px;
+}

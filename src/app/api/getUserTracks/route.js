@@ -11,13 +11,10 @@ export async function GET(req) {
 
   const client = await db.getClient();
   try {
-    /*const query = `
-      SELECT data, (NOW() - INTERVAL '7 days' >= created_at) AS actualizar FROM user_data_spotify WHERE user_name = $1;
-    `;*/
-
     const query = `
-      SELECT data, true AS actualizar FROM user_data_spotify WHERE user_name = $1;
+      SELECT data, (NOW() - INTERVAL '7 days' >= created_at) AS actualizar FROM user_data_spotify WHERE user_name = $1;
     `;
+
     const result = await client.query(query, [userId]);
 
     if (result.rows.length === 0) {

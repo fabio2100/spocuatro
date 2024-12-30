@@ -7,7 +7,14 @@ import axios from "axios";
 import Head from "next/head";
 import ListCustomItem from "./components/ListCustomItem";
 import List from "@mui/material/List";
-import { CircularProgress } from "@mui/material";
+import {
+  Box,
+  CircularProgress,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+} from "@mui/material";
 
 export default function Home() {
   const [mustUpdateDb, setmustUpdateDb] = useState(false);
@@ -26,8 +33,17 @@ export default function Home() {
     artistsLong: [],
   });
 
-  const updateUserData = (key, value) => {
-    setUserData((prevState) => ({
+  const [userDataApi, setUserDataApi] = useState({
+    tracksMedium: [],
+    tracksShort: [],
+    tracksLong: [],
+    artistsMedium: [],
+    artistsShort: [],
+    artistsLong: [],
+  });
+
+  const updateUserDataApi = (key, value) => {
+    setUserDataApi((prevState) => ({
       ...prevState,
       [key]: value,
     }));
@@ -80,7 +96,7 @@ export default function Home() {
           }
         });
     }
-  }, [userInfo,reload]);
+  }, [userInfo, reload]);
 
   useEffect(() => {
     if (mustUpdateDb || isNewUser) {
@@ -127,16 +143,20 @@ export default function Home() {
       );
 
       const results = await Promise.allSettled(fetchPromises);
-console.log(userData)
       results.forEach((result) => {
         if (result.status === "fulfilled") {
           const { id, data } = result.value;
-          console.log({ id});
-          const modifiedItems = data.items.map((item) => ({
-            ...item,
-            change: false,
-          }));
-          updateUserData(id, modifiedItems);
+          const modifiedItems = data.items.map((item, index) => {
+            const positionOld = userData[id].findIndex(
+              (element) => element.id === item.id
+            );
+            const change = positionOld - index;
+            return {
+              ...item,
+              change,
+            };
+          });
+          updateUserDataApi(id, modifiedItems);
         } else if (result.status === "rejected") {
           console.error(
             `Promise ${result.reason.config.url} rejected:`,
@@ -152,26 +172,26 @@ console.log(userData)
   useEffect(() => {
     if (mustUpdateDb || isNewUser) {
       const areAllElementsEmpty = (obj) => {
-        return Object.keys(obj.userData).every(
-          (key) => obj.userData[key].length === 0
+        return Object.keys(obj.userDataApi).every(
+          (key) => obj.userDataApi[key].length === 0
         );
       };
-      if (!areAllElementsEmpty({ userData })) {
-        updateDB(userData);
+      if (!areAllElementsEmpty({ userDataApi })) {
+        updateDB(userDataApi);
       }
     }
-  }, [userData]);
+  }, [userDataApi]);
 
-  const updateDB = async (userData) => {
-    if(reload) return
-    const filteredUserData = processUserData(userData);
+  const updateDB = async (userDataApi) => {
+    if (reload) return;
+    const filteredUserData = processUserData(userDataApi);
     try {
       await axios.post("/api/updateDb", {
         userId: userInfo.userId,
         userData: filteredUserData,
       });
       console.log("Database updated successfully");
-      setReload(true)
+      setReload(true);
     } catch (error) {
       console.error("Error updating the database", error);
     }
@@ -189,12 +209,66 @@ console.log(userData)
     return filteredUserData;
   };
 
+  const handleLogout = () => {
+    window.location.href = process.env.NEXT_PUBLIC_REDIRECT_URI;
+  };
+
+  /* Front end */
+  const [category, setCategory] = useState("canciones");
+  const [timeframe, setTimeframe] = useState("ultimas_4_semanas");
+
+  const handleCategoryChange = (event) => {
+    setCategory(event.target.value);
+  };
+  const handleTimeframeChange = (event) => {
+    setTimeframe(event.target.value);
+  };
+
   return (
     <div className={styles.page}>
-      <h1>Spocuatro</h1>
-      {console.log({ userData })}
+      <div className="header">
+        <h1 className="title">Spotres</h1>
+        {userInfo.userId && (
+          <p className="logout" onClick={handleLogout}>
+            Logout
+          </p>
+        )}
+      </div>
       {userInfo.userId ? (
-        <h1>loggeado</h1>
+        <>
+          <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
+            {" "}
+            <div>
+              {" "}
+              <select
+                id="category-select"
+                value={category}
+                onChange={handleCategoryChange}
+                className="custom-select"
+              >
+                {" "}
+                <option value="canciones">Canciones</option>{" "}
+                <option value="artistas">Artistas</option>{" "}
+              </select>{" "}
+            </div>{" "}
+            <div>
+              {" "}
+              <select
+                id="timeframe-select"
+                value={timeframe}
+                onChange={handleTimeframeChange}
+                className="custom-select"
+              >
+                {" "}
+                <option value="ultimas_4_semanas">
+                  Últimas 4 semanas
+                </option>{" "}
+                <option value="ultimos_6_meses">Últimos 6 meses</option>{" "}
+                <option value="ultimo_ano">Último año</option>{" "}
+              </select>{" "}
+            </div>{" "}
+          </div>
+        </>
       ) : (
         <button onClick={handleLogin} className="custom-button">
           <span className="button-text">SIGN WITH </span>
